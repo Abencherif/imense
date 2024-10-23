@@ -34,5 +34,5 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'mock_api_url' => env('MOCK_API_URL'),
 ];
