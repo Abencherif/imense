@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use App\Jobs\UpdateProductsJob;
 use App\Services\ExternalProductService;
 use Illuminate\Console\Command;
+use Illuminate\Bus\Batch;
+use Illuminate\Support\Facades\Bus;
+use Throwable;
 
 class SynchronizeProducts extends Command
 {
@@ -42,13 +45,13 @@ class SynchronizeProducts extends Command
         }
 
         // Process products in chunks (for better performance)
-        foreach (array_chunk($products, 100) as $batch) {
-            foreach ($batch as $productData) {
-                // Dispatch a job to process each product update
-                UpdateProductsJob::dispatch($productData);
-            }
-        }
+        $batches = array_chunk($products, 200); // Adjust batch size as needed
 
+        // Dispatch each product batch as a job batch
+        Bus::batch(
+            array_map(fn($batch) => new UpdateProductsJob($batch), $batches)
+        )->dispatch();
         $this->info('Product synchronization has been successfully dispatched.');
+
     }
 }

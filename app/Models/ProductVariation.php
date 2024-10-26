@@ -10,9 +10,17 @@ class ProductVariation extends Model
     protected $fillable =[
         'id',
         'product_id',
-        'attribute_name',
-        'attribute_value',
-        'price'
+        'external_id',
+        'color',
+        'material',
+        'quantity',
+        'additional_price'
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
 
 }

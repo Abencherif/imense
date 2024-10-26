@@ -3,13 +3,13 @@
 namespace App\Jobs;
 
 use App\Models\Product;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
 
 class UpdateProductsJob implements ShouldQueue
 {
-    use Queueable;
+    use Queueable,Batchable;
     protected $productData;
 
     /**
@@ -29,20 +29,31 @@ class UpdateProductsJob implements ShouldQueue
         // Simulate triggering events
         sleep(2);  // Simulate delay for each event
 
-        //dd($this->productData);
         // Update or create the product in the database
-        Product::updateOrCreate(
-            ['sku' => $this->productData['sku']],
-            [
-                'name' => $this->productData['name'],
-                'price' => $this->productData['price'],
-                'currency' => $this->productData['currency'],
-                'status' => $this->productData['status'],
-                'sku' => $this->productData['sku'],
-                'variations' => json_encode($this->productData['variations'] ?? []),
-            ]
-        );
+        foreach ($this->productData as $item){
+            $product = Product::updateOrCreate(
+                ['external_id' => $item['id']],
+                [
+                    'name' =>  $item['name'],
+                    'price' =>  $item['price'],
+                    'image' => $item['image'],
+                    'quantity' =>  $item['variations'][0]['quantity'] ?? 0,
+                    'external_id' => $item['id'],
+                ]
+            );
+            foreach ($item['variations'] as $variation) {
 
-        Log::info("Product with SKU {$this->productData['sku']} processed.");
+                $product->variations()->updateOrCreate([
+                    'external_id' => $variation['id'],
+                ],[
+                    'color'=> $variation['color'],
+                    'material' => $variation['material'],
+                    'quantity' => $variation['quantity'],
+                    'additional_price' => $variation['additional_price'],
+                    'external_id' => $variation['id'],
+                ]);
+            }
+        }
+
     }
 }

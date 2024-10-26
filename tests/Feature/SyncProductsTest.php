@@ -14,23 +14,24 @@ class SyncProductsTest extends TestCase
 
     public function test_it_can_sync_products_from_external_api()
     {
-        // Arrange: Mock the ExternalProductService to return fake data
+        // Arrange: Mock the ExternalProductService to return the JSON structure
         $mockProductData = [
             [
-                'sku' => 'SKU123',
-                'name' => 'Product de test 1',
-                'price' => 100.00,
-                'currency' => 'SAR',
-                'status' => 'sale',
-                'variations' => [],
-            ],
-            [
-                'sku' => 'SKU456',
-                'name' => 'Product de test 2',
-                'price' => 150.00,
-                'currency' => 'SAR',
-                'status' => 'sale',
-                'variations' => [],
+                'id' => '25',
+                'created_at' => '2020-12-15T21:28:26.899Z',
+                'name' => 'Handcrafted Concrete Cheese',
+                'image' => 'http://lorempixel.com/640/480/technics',
+                'price' => 34,
+                'variations' => [
+                    [
+                        'id' => '25',
+                        'productId' => '25',
+                        'color' => 'pink',
+                        'material' => 'Metal',
+                        'quantity' => 38,
+                        'additional_price' => 41
+                    ]
+                ],
             ]
         ];
 
@@ -41,26 +42,27 @@ class SyncProductsTest extends TestCase
                 ->andReturn($mockProductData);
         });
 
-        // Artisan: Run the sync command
+        // Act: Run the sync command
         Artisan::call('sync:products');
 
-        // Assert: Ensure products are inserted into the database
-        $this->assertDatabaseCount('products', 2);
+        $this->assertDatabaseCount('products', 1);
 
         $this->assertDatabaseHas('products', [
-            'sku' => 'SKU123',
-            'name' => 'Product de test 1',
-            'price' => 100.00,
-            'currency' => 'SAR',
-            'status' => 'sale',
+            'external_id' => '25',
+            'name' => 'Handcrafted Concrete Cheese',
+            'price' => 34,
         ]);
 
-        $this->assertDatabaseHas('products', [
-            'sku' => 'SKU456',
-            'name' => 'Product de test 2',
-            'price' => 150.00,
-            'currency' => 'SAR',
-            'status' => 'sale',
+        // Assert the variation is also inserted correctly
+        $this->assertDatabaseCount('product_variations', 1);
+
+        $this->assertDatabaseHas('product_variations', [
+            'external_id' => '25',
+            'color' => 'pink',
+            'material' => 'Metal',
+            'quantity' => 38,
+            'additional_price' => 41,
         ]);
     }
+
 }

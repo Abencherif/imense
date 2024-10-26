@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Product;
+use App\Models\ProductVariation;
+use App\Repositories\CSVProductUpdater;
 use App\Services\ImportProductsService;
 use Illuminate\Console\Command;
 
@@ -12,7 +15,7 @@ class ImportProducts extends Command
      *
      * @var string
      */
-    protected $signature = 'import:products';
+    protected $signature = 'import:products {filePath?}';
 
     /**
      * The console command description.
@@ -35,13 +38,14 @@ class ImportProducts extends Command
         try {
             ini_set('memory_limit', '-1');
             $startTime = microtime(true);
-            $filePath = storage_path('csv/products.csv');
-
+            $filePath = $this->argument('filePath') ? storage_path($this->argument('filePath')) : storage_path('csv/products.csv');
             // Check if file exist
+            $this->info('Checking if "products.csv" File Exist');
             if (!file_exists($filePath)) {
                 $this->error('File not found!');
                 return;
             }
+            $this->info('File Exist !, Start Importing');
             // Call import service to handle import
             $this->importService->Csv($filePath);
 
@@ -53,5 +57,7 @@ class ImportProducts extends Command
             $this->error($exception->getMessage());
         }
     }
+
+
 
 }

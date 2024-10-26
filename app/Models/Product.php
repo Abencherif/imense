@@ -10,7 +10,12 @@ class Product extends Model
 {
     use HasFactory,softDeletes;
 
-    protected $fillable = ['id','name', 'sku', 'status', 'variations', 'price', 'currency'];
+    protected $fillable = ['id','name', 'sku', 'status', 'variations', 'price', 'currency','external_id'];
+
+    public function variations()
+    {
+        return $this->hasMany(ProductVariation::class);
+    }
 
 
 }

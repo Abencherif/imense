@@ -12,8 +12,6 @@ class ExternalProductService
 
     public function __construct()
     {
-        // this link is not working 'https://670fb936a85f4164ef2ba7ad.mockapi.io/api/v5'
-
         $this->apiUrl = config('services.mock_api_url');
     }
 
